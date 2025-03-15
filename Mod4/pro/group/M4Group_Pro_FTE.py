@@ -15,31 +15,38 @@ def main():
     error = False
     keep_going = True
 
-    df = pd.DataFrame()
-    filename = "deansDailyCsar.csv"
+    dfs = {} # Dictionary to store DataFrames
+    filenames = ["deansDailyCsar.csv", "FTE_Tier.xlsx"]
+    for filename in filenames:
+        print(f"Trying to extract from {filename}.")
+        try:
+            df = extract.extract_csv(filename=filename)
+        except FileNotFoundError as e:
+            print(f"""Unable to find the {filename}. Please make sure it exists in
+                    the current directory.""")
+            print(f"Technical details: {e}")
+            error = True
+        except pd.errors.EmptyDataError as e:
+            print(f"The input file {filename} is empty. Please check the file "
+                  "contents.")
+            print(f"Technical details: {e}")
+            error = True
 
-    print(f"Trying to extract from {filename}.")
-    try:
-        df = extract.extract_csv(filename=filename)
-    except FileNotFoundError as e:
-        print(f"""Unable to find the {filename}. Please make sure it exists in
-                the current directory.""")
-        print(f"Technical details: {e}")
-        error = True
-    except pd.errors.EmptyDataError as e:
-        print(f"The input file {filename} is empty. Please check the file "
-              "contents.")
-        print(f"Technical details: {e}")
-        error = True
+        if not df.empty:
+            df = transform.sort_dataframe(df)
+            print("Data extraction complete and sorted.")
+            dfs[filename] = df
+        else:
+            print("Data failed to load.")
+            error = True
 
-    if not df.empty:
-        print("Data extraction complete.")
-        print("Sorting...")
-        df = transform.sort_dataframe(df)
-        print("Sorted.")
-    else:
-        print("Data failed to load.")
-        error = True
+    # Assign each DataFrame to a variable for easier accessibility
+    csar_df = dfs.get("deansDailyCsar.csv")
+    tier_df = dfs.get("FTE_Tier.xlsx")
+
+
+
+
 
     main_menu_header = "Main Menu"
     main_menu_options = [
@@ -55,15 +62,15 @@ def main():
         menu.print_menu(main_menu_header, main_menu_options)
         option = menu.get_menu_choice(len(main_menu_options))
         if option == 0:
-            options.option1(df)
+            options.option1(csar_df)
         elif option == 1:
-            options.course_enrollment_percentage(df)
+            options.course_enrollment_percentage(csar_df)
         elif option == 2:
-            options.fte_per_division(df)
+            options.fte_per_division(csar_df)
         elif option == 3:
-            options.fte_per_faculty(df)
+            options.fte_per_faculty(csar_df, tier_df)
         elif option == 4:
-            options.fte_per_course(df)
+            options.fte_per_course(csar_df)
         elif option == 5:
             print("Thanks for playing.")
             keep_going = False

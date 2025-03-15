@@ -132,24 +132,44 @@ def fte_per_division(data):
                           first_cell=unique_divisions[choice])
 
 
-def fte_per_faculty(data):
+def fte_per_faculty(faculty_data, course_tier ):
     """Prompts user for faculty name and then creates an excel sheet with
        FTE information for the courses for that faculty member
 
     Parameters
     ----------
-    data: pd.DataFrame
+    faculty_data: pd.DataFrame
+        DataFrame to extract information from
+    course_tier: pd.DataFrame
         DataFrame to extract information from
     """
+
+
+    # Get the unique instances of each faculty fame from teh DataFrame
     unique_faculty = transform.get_column_uniques(data, "Sec Faculty Info")
+
+    # Get the faculty name to search from user
     faculty_member = menu.fte_faculty_submenu(unique_faculty)
     if faculty_member is not None:
-        faculty_frame = transform.get_faculty_frame(data, faculty_member)
+
+        # Get new DataFrame for faculty member
+        faculty_frame = transform.get_faculty_frame(data,
+                                                    faculty_member)
+
         # Filter columns
-        columns_needed = ["Sec Name", "X Sec Delivery Method", "Meeting Times",
+        columns_needed = ["Sec Name", "X Sec Delivery Method",
+                          "Meeting Times",
                           "Capacity", "FTE Count", "Total FTE"]
-        faculty_frame = faculty_frame[columns_needed]
-        faculty_frame["Generated FTE"] = None
+
+        # Ensure only existing columns are selected
+        existing_columns = [col for col in columns_needed if
+                            col in faculty_frame.columns]
+        faculty_frame = faculty_frame[
+            existing_columns].copy()  # Use .copy() to avoid warnings
+
+        # Add "Generated FTE" column if it doesn’t exist
+        if "Generated FTE" not in faculty_frame.columns:
+            transform.generate_fte(faculty_data, course_tier)
 
         # Get the Courses for the faculty member
         courses = transform.get_column_uniques(faculty_frame, "Sec Name")
@@ -157,6 +177,8 @@ def fte_per_faculty(data):
 
         # Get the last name and first initial for the filename
         file_name = faculty_member.split()[1] + faculty_member[0]
+
+        # Write data to an Excel file
         load.create_fte_excel(data=faculty_frame, name=file_name,
                               course_codes=course_codes,
                               first_cell=faculty_member)

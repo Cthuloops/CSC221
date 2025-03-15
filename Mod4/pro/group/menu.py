@@ -113,7 +113,7 @@ def fte_faculty_submenu(faculty):
                        "faculty,\n(or enter Q to quit) \n "
                        ">>>").strip().title()
         if choice == 'Q':
-            Return None
+            return None
         if choice == "Tba":
             return "To be Announced"
 
