@@ -183,6 +183,28 @@ def compute_fte(row, courseid_to_funding, support=1926):
     # funding level
     return (prop_fund + support) * row["Total FTE"]  # Apply formula
 
+def total_FTEs(data):
+    """
+    calculates to total FTE for each course and for a division
+    :param data: ps.DataFrame
+        A DataFrame that has individual secs generated FTE 
+    :return: 
+    course_FTE: dictionary
+        courses and their total generated FTE
+    final_FTE: Interger
+        total generated FTE for entire dataframe
+    
+    """
+
+
+    # Get the totals for different courses
+    course_FTE_total = data.groupby("Course Code")["FTE"].sum().to_dict()
+
+    # Get total for the entire division
+
+    final_FTE_total = data["Generated FTE"].sum()
+    return course_FTE_total, final_FTE_total
+
 
 
 

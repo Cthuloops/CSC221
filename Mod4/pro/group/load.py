@@ -65,6 +65,14 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
     filter: bool
         If true, course frame will be filtered.
     """
+
+    # Get the total FTE values
+    course_totals, final_total = transform.total_FTEs(data)
+
+    #Determine if faculty or div file to use as label for final total
+    is_faculty_report = "Faculty Name" in data.columns
+    total_label = "Faculty Total" if is_faculty_report else "Div Total"
+
     course_name = re.match(r"[A-Z]{3}-\d{3}[A-Z]?", name)
     if course_name is not None:
         filename = name.split("-")[0].lower() + name.split("-")[1]
@@ -103,11 +111,14 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
                 current_row += 1
             # Write total.
             worksheet.write(current_row, start_column - 1, "Total")
+            worksheet.write(current_row, start_column - 9,
+                            course_totals.get(course, 0))
             current_row += 1
 
         # Write div total for division, instructor
         if first_cell is not None:
-            worksheet.write(current_row, 1, "Div Total")
+            worksheet.write(current_row, 1, total_label)
+            worksheet.write(current_row, start_column - 9, final_total)
         # Try to fit the columns to the data.
         worksheet.autofit()
 
