@@ -1,6 +1,7 @@
 """Data transformations"""
 
 import pandas as pd
+import extract
 
 
 def sort_dataframe(data, sort_by=["Sec Divisions", "Sec Name",
@@ -38,8 +39,10 @@ def get_column_uniques(data, name):
     list[str]
         List of unique values.
     """
+
+    # Extract unique, non-null values
     unique_values = data[name].dropna().unique()
-    # Explicit conversion to list[str] so my lsp will stop yelling at me.
+    # Explicit conversion to list[str] to prevent type errors
     return [str(x) for x in unique_values]
 
 
@@ -116,3 +119,83 @@ def get_faculty_frame(data, name):
     frame = data[data["Sec Faculty Info"] == name]
 
     return frame
+
+def get_tier_frame():
+    """
+    extracts the data from FTE_Tier.xlsx into a DataFrame
+    :return: pd.DataFrame
+        tier_frame: DataFrame containing the Tier and proposed
+        funding level for each course ID
+    """
+    tier_frame = extract.extract_csv('FTE_Tier.xlsx')
+    return tier_frame
+
+
+def generate_FTE(data, tier, support = 1926):
+    """
+    calculates generated FTE for a set of data and returns it as a
+    Pandas Series
+
+    Parameters
+    ----------
+    data: pd.DataFrame
+        DataFrame to calculate generated FTE for
+
+    tier: pd.DataFrame
+        DataFrame that holds the proposed funding lever for different tiers
+
+    Returns
+    -------
+    pd.DataFrame
+        generate_FTE: a new DataFrame that has the generated FTE
+    """
+
+    # create a dictionary to hold the course ID and their proposed
+    # funding
+    courseid_to_funding = {
+        row["Prefix/Course ID"]: row["New Sector"]
+        for _, row in tier.iterrows()
+    }
+
+    # Apply computed generated FTE to for all rows in original DataFrame
+    data["Generated FTE"] = data.apply(
+        lambda row: compute_fte(row, courseid_to_funding, support),
+        axis=1)
+
+    return data
+
+
+def compute_fte(row, courseid_to_funding, support=1926):
+    """
+    Computes the generate FTE for a single row in a dataframe
+    :param row: pd.Series
+        a row from the data DataFrame
+    :param courseid_to_funding: dict
+        a dictionary for the course prefixes and their funding levels
+    :param support: int, optional
+        a fixed amount for institutional and academic support(default
+        is 1926)
+    :return: float
+        the computed generated FTE value for the row
+    """
+    course_prefix = row["Course Code"][:3]  # Extract prefix (first 3 chars)
+    prop_fund = courseid_to_funding.get(course_prefix, 0)  # Get
+    # funding level
+    return (prop_fund + support) * row["Total FTE"]  # Apply formula
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

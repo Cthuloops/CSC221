@@ -132,13 +132,15 @@ def fte_per_division(data):
                           first_cell=unique_divisions[choice])
 
 
-def fte_per_faculty(data):
+def fte_per_faculty(faculty_data, course_tier ):
     """Prompts user for faculty name and then creates an excel sheet with
        FTE information for the courses for that faculty member
 
     Parameters
     ----------
-    data: pd.DataFrame
+    faculty_data: pd.DataFrame
+        DataFrame to extract information from
+    course_tier: pd.DataFrame
         DataFrame to extract information from
     """
 
@@ -167,7 +169,7 @@ def fte_per_faculty(data):
 
         # Add "Generated FTE" column if it doesn’t exist
         if "Generated FTE" not in faculty_frame.columns:
-            faculty_frame["Generated FTE"] = None
+            transform.generate_FTE(faculty_data, course_tier)
 
         # Get the Courses for the faculty member
         courses = transform.get_column_uniques(faculty_frame, "Sec Name")
@@ -175,6 +177,8 @@ def fte_per_faculty(data):
 
         # Get the last name and first initial for the filename
         file_name = faculty_member.split()[1] + faculty_member[0]
+
+        # Write data to an Excel file
         load.create_fte_excel(data=faculty_frame, name=file_name,
                               course_codes=course_codes,
                               first_cell=faculty_member)
