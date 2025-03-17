@@ -5,6 +5,7 @@ import load
 import menu
 import transform
 import util
+import pandas as pd
 
 
 def print_option1_instructions():
@@ -144,47 +145,79 @@ def fte_per_faculty(faculty_data, course_tier ):
         DataFrame to extract information from
     """
 
+    try:
 
-    # Get the unique instances of each faculty fame from teh DataFrame
-    unique_faculty = transform.get_column_uniques(data, "Sec Faculty Info")
+        if not isinstance(faculty_data, pd.DataFrame):
+            raise TypeError("faculty_data must be a pandas DataFrame.")
+        if not isinstance(course_tier, pd.DataFrame):
+            raise TypeError("course_tier must be a pandas DataFrame.")
 
-    # Get the faculty name to search from user
-    faculty_member = menu.fte_faculty_submenu(unique_faculty)
-    if faculty_member is not None:
+        # Ensure required column exists in faculty_data
+        if "Sec Faculty Info" not in faculty_data.columns:
+            raise KeyError("Missing required column: 'Sec Faculty "
+                           "Info' in faculty_data.")
 
-        # Get new DataFrame for faculty member
-        faculty_frame = transform.get_faculty_frame(data,
-                                                    faculty_member)
+        # Get the unique instances of each faculty fame from teh DataFrame
+        unique_faculty = transform.get_column_uniques(faculty_data,
+                                                      "Sec Faculty Info")
 
-        # Filter columns
-        columns_needed = ["Sec Name", "X Sec Delivery Method",
-                          "Meeting Times",
-                          "Capacity", "FTE Count", "Total FTE"]
+        # Get the faculty name to search from user
+        faculty_member = menu.fte_faculty_submenu(unique_faculty)
+        if faculty_member is not None:
 
-        # Ensure only existing columns are selected
-        existing_columns = [col for col in columns_needed if
-                            col in faculty_frame.columns]
-        faculty_frame = faculty_frame[
-            existing_columns].copy()  # Use .copy() to avoid warnings
+            # Get new DataFrame for faculty member
+            faculty_frame = transform.get_faculty_frame(faculty_data,
+                                                        faculty_member)
 
-        # Add "Generated FTE" column if it doesn’t exist
-        if "Generated FTE" not in faculty_frame.columns:
-            transform.generate_FTE(faculty_data, course_tier)
+            # Ensure faculty_frame is not empty
+            if faculty_frame.empty:
+                print(f"No data found for faculty member: {faculty_member}")
+                input("Press Enter to continue...")
+                return
 
-        # Get the Courses for the faculty member
-        courses = transform.get_column_uniques(faculty_frame, "Sec Name")
-        course_codes = sorted(util.get_course_codes(courses))
+            # Define columns
+            columns_needed = ["Sec Name", "X Sec Delivery Method",
+                              "Meeting Times",
+                              "Capacity", "FTE Count", "Total FTE"]
 
-        # Get the last name and first initial for the filename
-        file_name = faculty_member.split()[1] + faculty_member[0]
+            # Ensure only existing columns are selected
+            existing_columns = [col for col in columns_needed if
+                                col in faculty_frame.columns]
+            if not existing_columns:
+                raise KeyError(
+                    "None of the required columns exist in faculty_frame.")
+            faculty_frame = faculty_frame[
+                existing_columns].copy()  # Use .copy() to avoid warnings
 
-        # Write data to an Excel file
-        load.create_fte_excel(data=faculty_frame, name=file_name,
-                              course_codes=course_codes,
-                              first_cell=faculty_member)
-    else:
-        print("No faculty member selected")
-        input("Press enter to continue")
+            # Add "Generated FTE" column if it doesn’t exist
+            if "Generated FTE" not in faculty_frame.columns:
+                transform.generate_FTE(faculty_data, course_tier)
+
+            # Get the Courses for the faculty member
+            courses = transform.get_column_uniques(faculty_frame, "Sec Name")
+            course_codes = sorted(util.get_course_codes(courses))
+
+            # Get the last name and first initial for the filename
+            file_name = faculty_member.split()[1] + faculty_member[0]
+
+            # Write data to an Excel file
+            load.create_fte_excel(data=faculty_frame, name=file_name,
+                                  course_codes=course_codes,
+                                  first_cell=faculty_member)
+        else:
+            print("No faculty member selected")
+            input("Press enter to continue")
+
+    except KeyError as e:
+        print(f"KeyError in fte_per_faculty: {e}")
+    except ValueError as e:
+        print(f"ValueError in fte_per_faculty: {e}")
+    except TypeError as e:
+        print(f"TypeError in fte_per_faculty: {e}")
+    except Exception as e:
+        print(f"Unexpected error in fte_per_faculty: {e}")
+
+    print("Returning to main menu...")
 
 
 def fte_per_course(data):

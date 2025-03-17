@@ -150,19 +150,53 @@ def generate_FTE(data, tier, support = 1926):
         generate_FTE: a new DataFrame that has the generated FTE
     """
 
-    # create a dictionary to hold the course ID and their proposed
-    # funding
-    courseid_to_funding = {
-        row["Prefix/Course ID"]: row["New Sector"]
-        for _, row in tier.iterrows()
-    }
+    try:
+        # Ensure valid dataframes
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError(
+                "Parameter 'data' must be a pandas DataFrame.")
+        if not isinstance(tier, pd.DataFrame):
+            raise TypeError(
+                "Parameter 'tier' must be a pandas DataFrame.")
 
-    # Apply computed generated FTE to for all rows in original DataFrame
-    data["Generated FTE"] = data.apply(
-        lambda row: compute_fte(row, courseid_to_funding, support),
-        axis=1)
+        # Check if required columns exist in 'tier'
+        required_tier_columns = ["Prefix/Course ID", "New Sector"]
+        for col in required_tier_columns:
+            if col not in tier.columns:
+                raise KeyError(
+                    f"Missing required column '{col}' in tier "
+                    f"DataFrame.")
 
-    return data
+        # Check if required columns exist in 'data'
+        required_data_columns = ["Course Code", "Total FTE"]
+        for col in required_data_columns:
+            if col not in data.columns:
+                raise KeyError(
+                    f"Missing required column '{col}' in data "
+                    f"DataFrame.")
+
+        # create a dictionary to hold the course ID and their proposed
+        # funding
+        courseid_to_funding = {
+            row["Prefix/Course ID"]: row["New Sector"]
+            for _, row in tier.iterrows()
+        }
+
+        # Apply computed generated FTE to for all rows in original DataFrame
+        data["Generated FTE"] = data.apply(
+            lambda row: compute_fte(row, courseid_to_funding, support),
+            axis=1)
+
+        return data
+
+    except TypeError as e:
+        print(f"TypeError in generate_FTE: {e}")
+    except KeyError as e:
+        print(f"KeyError in generate_FTE: {e}")
+    except Exception as e:
+        print(f"Unexpected error in generate_FTE: {e}")
+
+    return data.copy()
 
 
 def compute_fte(row, courseid_to_funding, support=1926):
@@ -178,10 +212,41 @@ def compute_fte(row, courseid_to_funding, support=1926):
     :return: float
         the computed generated FTE value for the row
     """
-    course_prefix = row["Course Code"][:3]  # Extract prefix (first 3 chars)
-    prop_fund = courseid_to_funding.get(course_prefix, 0)  # Get
-    # funding level
-    return (prop_fund + support) * row["Total FTE"]  # Apply formula
+
+    try:
+        # Ensure required columns are in DataFrame
+        if "Course Code" not in row:
+            raise KeyError("Missing required column: 'Course Code'")
+        if "Total FTE" not in row:
+            raise KeyError("Missing required column: 'Total FTE'")
+
+        # Ensure 'Course Code' is a string and has at least 3 characters
+        course_code = row["Course Code"]
+        if not isinstance(course_code, str) or len(course_code) < 3:
+            raise ValueError(f"Invalid course code: {course_code}")
+
+        # Extract prefix (first 3 chars)
+        course_prefix = row["Course Code"][:3]
+
+        # Ensure 'Total FTE' is a number
+        total_fte = row["Total FTE"]
+        if not isinstance(total_fte, (int, float)) or pd.isna(total_fte):
+            raise ValueError(f"Invalid 'Total FTE' value: {total_fte}")
+
+        # Get funding level and calculate generated FTE
+        prop_fund = courseid_to_funding.get(course_prefix, 0)
+        return (prop_fund + support) * total_fte
+
+    except KeyError as e:
+        print(f" KeyError in compute_fte: {e}")
+    except ValueError as e:
+        print(f" ValueError in compute_fte: {e}")
+    except TypeError as e:
+        print(f" TypeError in compute_fte: {e}")
+    except Exception as e:
+        print(f" Unexpected error in compute_fte: {e}")
+
+    return 0  # Return 0 if an error occurs so program doesn't crash
 
 def total_FTEs(data):
     """
@@ -196,14 +261,39 @@ def total_FTEs(data):
     
     """
 
+    try:
+        # Ensure required columns exist
+        if "Course Code" not in data.columns:
+            raise KeyError("Missing required column: 'Course Code'")
+        if "FTE" not in data.columns:
+            raise KeyError("Missing required column: 'FTE'")
+        if "Generated FTE" not in data.columns:
+            raise KeyError("Missing required column: 'Generated FTE'")
 
-    # Get the totals for different courses
-    course_FTE_total = data.groupby("Course Code")["FTE"].sum().to_dict()
+        # Ensure FTE column contains valid numeric values
+        if not pd.api.types.is_numeric_dtype(data["FTE"]):
+            raise ValueError("Column 'FTE' must contain only "
+                             "numeric values.")
 
-    # Get total for the entire division
+        # Get the totals for different courses
+        course_fte_total = data.groupby("Course Code")["FTE"].sum(
 
-    final_FTE_total = data["Generated FTE"].sum()
-    return course_FTE_total, final_FTE_total
+        ).to_dict()
+
+        # Get total for the entire division
+        final_FTE_total = data["Generated FTE"].sum()
+        return course_fte_total, final_FTE_total
+
+    except KeyError as e:
+        print(f"️ KeyError in total_FTEs: {e}")
+    except ValueError as e:
+        print(f"️ ValueError in total_FTEs: {e}")
+    except TypeError as e:
+        print(f"️ TypeError in total_FTEs: {e}")
+    except Exception as e:
+        print(f"️ Unexpected error in total_FTEs: {e}")
+
+    return {}, 0
 
 
 

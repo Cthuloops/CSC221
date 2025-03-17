@@ -22,7 +22,6 @@ def extract_csv(filename):
                                       f"instead got {filename}."
     assert filename, "File should not be empty"
     assert filename.endswith(".csv"), f"Expected csv file got {filename}."
-    data = pd.DataFrame()
     file_path = ""
     try:
         file_path = os.path.join(os.getcwd(), filename)
