@@ -67,7 +67,7 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
     """
 
     # Get the total FTE values
-    course_totals, final_total = transform.total_FTEs(data)
+    course_totals, final_total = transform.total_ftes(data)
 
     #Determine if faculty or div file to use as label for final total
     is_faculty_report = "Faculty Name" in data.columns
@@ -85,7 +85,7 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
     start_column = 1 if first_cell is None else 2
 
     excel_options = {'nan_inf_to_errors': True}
-    with (xlsxwriter.Workbook(file_path, excel_options) as workbook):
+    with xlsxwriter.Workbook(file_path, excel_options) as workbook:
         worksheet = workbook.add_worksheet()
         # Write the header row.
         if first_cell is not None:
