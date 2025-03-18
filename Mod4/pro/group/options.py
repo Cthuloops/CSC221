@@ -189,14 +189,13 @@ def fte_per_faculty(faculty_data, course_tier ):
             faculty_frame = faculty_frame[
                 existing_columns].copy()  # Use .copy() to avoid warnings
 
-            # Add "Generated FTE" column if it doesn’t exist
             if "Generated FTE" not in faculty_frame.columns:
-                transform.generate_fte(faculty_data, course_tier)
+                faculty_frame = transform.generate_FTE(faculty_frame,
+                                                       course_tier)
 
             # Get the Courses for the faculty member
             courses = transform.get_column_uniques(faculty_frame, "Sec Name")
-            course_codes = util.get_course_codes(courses)
-            return
+            course_codes = sorted(util.get_course_codes(courses))
 
             # Get the last name and first initial for the filename
             file_name = faculty_member.split()[1] + faculty_member[0]
@@ -205,6 +204,8 @@ def fte_per_faculty(faculty_data, course_tier ):
             load.create_fte_excel(data=faculty_frame, name=file_name,
                                   course_codes=course_codes,
                                   first_cell=faculty_member)
+
+
         else:
             print("No faculty member selected")
             input("Press enter to continue")

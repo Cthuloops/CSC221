@@ -67,7 +67,7 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
     """
 
     # Get the total FTE values
-    course_totals, final_total = transform.total_fte(data)
+    course_totals, final_total = transform.total_FTEs(data)
 
     #Determine if faculty or div file to use as label for final total
     is_faculty_report = "Faculty Name" in data.columns
@@ -85,7 +85,7 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
     start_column = 1 if first_cell is None else 2
 
     excel_options = {'nan_inf_to_errors': True}
-    with xlsxwriter.Workbook(file_path, excel_options) as workbook:
+    with (xlsxwriter.Workbook(file_path, excel_options) as workbook):
         worksheet = workbook.add_worksheet()
         # Write the header row.
         if first_cell is not None:
@@ -111,14 +111,21 @@ def create_fte_excel(data, name, course_codes, first_cell=None,
                 current_row += 1
             # Write total.
             worksheet.write(current_row, start_column - 1, "Total")
-            worksheet.write(current_row, start_column - 9,
-                            course_totals.get(course, 0))
+            fte_column_index = data.columns.get_loc(
+                "Generated FTE") if "Generated FTE" in data.columns else start_column + 4
+            worksheet.write(current_row, 8, course_totals.get(course,
+                                                              0))
             current_row += 1
 
         # Write div total for division, instructor
         if first_cell is not None:
             worksheet.write(current_row, 1, total_label)
-            worksheet.write(current_row, start_column - 9, final_total)
+            if "Generated FTE" in data.columns:
+                fte_column_index = data.columns.get_loc(
+                    "Generated FTE")
+            else:
+                fte_column_index = start_column + 4
+            worksheet.write(current_row, 8, final_total)
         # Try to fit the columns to the data.
         worksheet.autofit()
 

@@ -131,7 +131,7 @@ def get_tier_frame():
     return tier_frame
 
 
-def generate_fte(data, tier, support = 1926):
+def generate_FTE(data, tier, support = 1926):
     """
     calculates generated FTE for a set of data and returns it as a
     Pandas Series
@@ -175,8 +175,13 @@ def generate_fte(data, tier, support = 1926):
                     f"Missing required column '{col}' in data "
                     f"DataFrame.")
 
+
         # create a dictionary to hold the course ID and their proposed
         # funding
+
+        data["_Course Prefix"] = data["Sec Name"].str[:3]
+        data.loc[:, "_Course Prefix"] = data["_Course Prefix"].fillna("UNKNOWN")
+
         courseid_to_funding = {
             row["Prefix/Course ID"]: row["New Sector"]
             for _, row in tier.iterrows()
@@ -186,6 +191,7 @@ def generate_fte(data, tier, support = 1926):
         data["Generated FTE"] = data.apply(
             lambda row: compute_fte(row, courseid_to_funding, support),
             axis=1)
+        data.drop(columns=["_Course Prefix"], inplace=True, errors="ignore")
 
         return data
 
@@ -216,7 +222,7 @@ def compute_fte(row, courseid_to_funding, support=1926):
     try:
         # Ensure required columns are in DataFrame
         if "Sec Name" not in row:
-            raise KeyError("Missing required column: 'Course Code'")
+            raise KeyError("Missing required column: 'Sec Name'")
         if "Total FTE" not in row:
             raise KeyError("Missing required column: 'Total FTE'")
 
@@ -248,7 +254,7 @@ def compute_fte(row, courseid_to_funding, support=1926):
 
     return 0  # Return 0 if an error occurs so program doesn't crash
 
-def total_fte(data):
+def total_FTEs(data):
     """
     calculates to total FTE for each course and for a division
     :param data: ps.DataFrame
@@ -263,25 +269,31 @@ def total_fte(data):
 
     try:
         # Ensure required columns exist
-        if "Course Code" not in data.columns:
-            raise KeyError("Missing required column: 'Course Code'")
-        if "FTE" not in data.columns:
-            raise KeyError("Missing required column: 'FTE'")
+        if "Sec Name" not in data.columns:
+            raise KeyError("Missing required column: 'Sec Name'")
+        if "Total FTE" not in data.columns:
+            raise KeyError("Missing required column: 'Total FTE'")
         if "Generated FTE" not in data.columns:
             raise KeyError("Missing required column: 'Generated FTE'")
 
         # Ensure FTE column contains valid numeric values
-        if not pd.api.types.is_numeric_dtype(data["FTE"]):
+        if not pd.api.types.is_numeric_dtype(data["Total FTE"]):
             raise ValueError("Column 'FTE' must contain only "
                              "numeric values.")
 
         # Get the totals for different courses
-        course_fte_total = data.groupby("Course Code")["FTE"].sum(
-
-        ).to_dict()
+        data["_Course Code"] = data["Sec Name"].str.extract(
+            r"([A-Z]{3}-\d{3})")
+        course_fte_total = data.groupby("_Course Code")[("Generated "
+                                                         "FTE")].sum().to_dict()
+        data.drop(columns=["_Course Code"], inplace=True,
+                  errors="ignore")
 
         # Get total for the entire division
         final_FTE_total = data["Generated FTE"].sum()
+
+        print("\n✅ Corrected Course Totals (Grouped by Course Code):",
+              course_fte_total)
         return course_fte_total, final_FTE_total
 
     except KeyError as e:

@@ -17,7 +17,7 @@ def extract_csv(filename):
     pd.DataFrame
         DataFrame containing the CSV information
     """
-    assert filename is not None, "Filename should not be None."
+    assert filename is not None, "File should not be None."
     assert isinstance(filename, str), "Expected filename to be a string" \
                                       f"instead got {filename}."
     assert filename, "File should not be empty"
@@ -32,7 +32,6 @@ def extract_csv(filename):
         raise pd.errors.EmptyDataError(f"Error: File {file_path} is empty")
 
     return data
-
 
 def extract_excel(filename):
     """Load Excel file into a Pandas DataFrame
