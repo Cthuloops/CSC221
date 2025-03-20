@@ -28,8 +28,8 @@ def get_menu_choice(amount_options):
         except ValueError:
             # Ignoring anything other than a number in the correct range
             ...
-    # Gotta remove the 1 added to the options when printed for menus that
-    # aren't main
+    # Need to remove the 1 added to the options when printed for
+    # menus that aren't main
     return user_input - 1
 
 
@@ -43,12 +43,13 @@ def print_menu(header, options):
     options: list[str]
         menu options
     """
-    # Get the amount of digits in the length of options (e.g. 15 = 2 digits).
+    # Get the amount of digits in the length of  options (e.g. 15 = 2
+    # digits).
     length_digits = len(str(len(options)))
     # Add 2 to account for the '. ' in the print loop.
     length_formatting = length_digits + 2
     # Get the length of the longest option for formatting.
-    max_length = max([len(op) + length_formatting for op in options])
+    max_length = max(len(op) + length_formatting for op in options)
     if max_length < len(header):
         max_length = len(header) + length_digits
 
@@ -101,7 +102,8 @@ def fte_faculty_submenu(faculty):
     Returns
     -------
     str or None
-        The faculty member name, or "To be Announced", or None if the user quits
+        The faculty member name, or "To be Announced",
+         or None if the user quits
     """
     keep_going = True
     while keep_going:
@@ -139,8 +141,8 @@ def fte_faculty_submenu(faculty):
 
         # If no matches, notify user and loop again
         if not found_name:
-            print(f"{choice} could not be found, please check spelling\n")
+            print(f"{choice} could not be found, "
+                  f"please check spelling\n")
             continue  # Restart loop
 
         return found_name  # Return found faculty name
-

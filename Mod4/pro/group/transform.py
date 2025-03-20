@@ -66,7 +66,7 @@ def get_division_frame(data, name):
     return frame
 
 
-def get_course_frame(data, name, filter=True):
+def get_course_frame(data, name, apply_filter=True):
     """Extracts rows associated with a course code
 
     Parameters
@@ -81,17 +81,19 @@ def get_course_frame(data, name, filter=True):
     Returns
     -------
     pd.DataFrame
-        All rows associated to the Course Code without face-to-face classes
-        with INET meeting times if filtered, else all rows.
+        All rows associated to the Course Code without face-to-face
+        classes with INET meeting times if filtered, else all rows.
     """
     # Get the course rows
     frame = data[data["Sec Name"].str.contains(name)]
-    if filter:
+    if apply_filter:
         # Get all the face-to-face sections.
         zero_sections = frame["Sec Name"].str.contains(r"-\d0\d\d")
         zero_frame = frame[zero_sections]
-        # Group them together and take only the first record for each group.
-        zero_frame = zero_frame.groupby("Sec Name", as_index=False).first()
+        # Group them together and take only the first record for
+        # each group.
+        zero_frame = (
+            zero_frame.groupby("Sec Name", as_index=False).first())
         # Get all the other sections.
         non_zero_frame = frame[~zero_sections]
         frame = pd.concat([zero_frame, non_zero_frame])
@@ -100,25 +102,28 @@ def get_course_frame(data, name, filter=True):
 
 
 def get_faculty_frame(data, name):
-    """Extracts rows associated with a faculty member or ones not assigned yet.
+    """Extracts rows associated with a faculty member or ones not
+    assigned yet.
 
     Parameters
     ----------
     data: pd.DataFrame
         DataFrame to extract rows from
     name: str
-        Faculty name to filter for. 'To be Announced' if looking for unassigned
-        courses.
+        Faculty name to filter for. 'To be Announced' if looking for
+        unassigned courses.
 
     Returns
     -------
     pd.DataFrame
-        All rows associated to the given faculty member of no faculty member.
+        All rows associated to the given faculty member of no faculty
+        member.
     """
     # Get faculty rows
     frame = data[data["Sec Faculty Info"] == name]
 
     return frame
+
 
 def get_tier_frame():
     """
@@ -127,13 +132,15 @@ def get_tier_frame():
         tier_frame: DataFrame containing the Tier and proposed
         funding level for each course ID
     """
+
     tier_frame = extract.extract_csv('FTE_Tier.xlsx')
     return tier_frame
 
 
-def generate_fte(data, tier, support = 1926):
+def generate_fte(data, tier, support=1926):
     """
-    calculates generated FTE for a set of data and returns new dataframe containing generated fte
+    calculates generated FTE for a set of data and returns new dataframe
+    containing generated fte
 
     Parameters
     ----------
@@ -141,7 +148,8 @@ def generate_fte(data, tier, support = 1926):
         DataFrame to calculate generated FTE for
 
     tier: pd.DataFrame
-        DataFrame that holds the proposed funding lever for different tiers
+        DataFrame that holds the proposed funding lever for different
+        tiers
 
     Returns
     -------
@@ -149,8 +157,6 @@ def generate_fte(data, tier, support = 1926):
         generate_fte: a new DataFrame that has the generated FTE
     """
     # Constant value used for calculating FTE
-    
-
     try:
         # Ensure valid dataframes
         if not isinstance(data, pd.DataFrame):
@@ -176,23 +182,23 @@ def generate_fte(data, tier, support = 1926):
                     f"Missing required column '{col}' in data "
                     f"DataFrame.")
 
-
         # create a dictionary to hold the course ID and their proposed
         # funding
-
         data["_Course Prefix"] = data["Sec Name"].str[:3]
-        data.loc[:, "_Course Prefix"] = data["_Course Prefix"].fillna("UNKNOWN")
-
+        data.loc[:, "_Course Prefix"] =\
+            data["_Course Prefix"].fillna("UNKNOWN")
         courseid_to_funding = {
             row["Prefix/Course ID"]: row["New Sector"]
             for _, row in tier.iterrows()
         }
 
-        # Apply computed generated FTE to for all rows in original DataFrame
+        # Apply computed generated FTE to for all rows in original
+        # DataFrame
         data["Generated FTE"] = data.apply(
             lambda row: compute_fte(row, courseid_to_funding, support),
             axis=1)
-        data.drop(columns=["_Course Prefix"], inplace=True, errors="ignore")
+        data.drop(columns=["_Course Prefix"],
+                  inplace=True, errors="ignore")
 
         return data
 
@@ -200,8 +206,6 @@ def generate_fte(data, tier, support = 1926):
         print(f"TypeError in generate_fte: {e}")
     except KeyError as e:
         print(f"KeyError in generate_fte: {e}")
-    except Exception as e:
-        print(f"Unexpected error in generate_fte: {e}")
 
     return data.copy()
 
@@ -237,7 +241,8 @@ def compute_fte(row, courseid_to_funding, support=1926):
 
         # Ensure 'Total FTE' is a number
         total_fte = row["Total FTE"]
-        if not isinstance(total_fte, (int, float)) or pd.isna(total_fte):
+        if (not isinstance(total_fte, (int, float))
+                or pd.isna(total_fte)):
             raise ValueError(f"Invalid 'Total FTE' value: {total_fte}")
 
         # Get funding level and calculate generated FTE
@@ -250,22 +255,20 @@ def compute_fte(row, courseid_to_funding, support=1926):
         print(f" ValueError in compute_fte: {e}")
     except TypeError as e:
         print(f" TypeError in compute_fte: {e}")
-    except Exception as e:
-        print(f" Unexpected error in compute_fte: {e}")
 
     return 0  # Return 0 if an error occurs so program doesn't crash
+
 
 def total_ftes(data):
     """
     calculates to total FTE for each course and for a division
     :param data: ps.DataFrame
-        A DataFrame that has individual secs generated FTE 
-    :return: 
+        A DataFrame that has individual secs generated FTE
+    :return:
     course_fte: dictionary
         courses and their total generated FTE
     final_fte: Interger
         total generated FTE for entire dataframe
-    
     """
 
     try:
@@ -291,9 +294,9 @@ def total_ftes(data):
                   errors="ignore")
 
         # Get total for the entire division
-        final_FTE_total = data["Generated FTE"].sum()
+        final_fte_total = data["Generated FTE"].sum()
 
-        return course_fte_total, final_FTE_total
+        return course_fte_total, final_fte_total
 
     except KeyError as e:
         print(f"️ KeyError in total_FTEs: {e}")
@@ -301,24 +304,5 @@ def total_ftes(data):
         print(f"️ ValueError in total_FTEs: {e}")
     except TypeError as e:
         print(f"️ TypeError in total_FTEs: {e}")
-    except Exception as e:
-        print(f"️ Unexpected error in total_FTEs: {e}")
 
     return {}, 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

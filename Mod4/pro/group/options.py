@@ -1,11 +1,11 @@
 """Module containing program options."""
 
 
+import pandas as pd
 import load
 import menu
 import transform
 import util
-import pandas as pd
 
 
 def print_option1_instructions():
@@ -13,8 +13,8 @@ def print_option1_instructions():
     print()
     print("Option 1 instructions:")
     print(f"{'':-^22}")
-    print("To finish entering division codes, you must enter the option for "
-          "'Finish entering codes'")
+    print("To finish entering division codes, you must enter the option"
+          " for 'Finish entering codes'")
     print("Press any key to continue.")
     input()
 
@@ -28,7 +28,8 @@ def option1(data):
         DataFrame to create excel sheets from.
     """
     print_option1_instructions()
-    unique_codes = transform.get_column_uniques(data, "Sec Divisions")
+    unique_codes = transform.get_column_uniques(data,
+                                                "Sec Divisions")
     header = "Sec Divisions"
     options = ["All"]
     options.extend(unique_codes)
@@ -38,12 +39,12 @@ def option1(data):
     menu.print_menu(header, options)
 
     choice_list = []
-    all = False
+    select_all = False
     keep_entering = True
     while keep_entering:
         choice = menu.get_menu_choice(len(options))
         if choice == 0:
-            all = True
+            select_all = True
             keep_entering = False
         elif options[choice].startswith("Finish"):
             keep_entering = False
@@ -53,7 +54,7 @@ def option1(data):
         else:
             choice_list.append(choice)
 
-    if all:
+    if select_all:
         for code in unique_codes:
             frame = transform.get_division_frame(data, code)
             load.create_excel_sheets(frame, code.casefold())
@@ -66,7 +67,8 @@ def option1(data):
             if options[choice] == "No code":
                 load.create_excel_sheets(frame, "no_division")
             else:
-                load.create_excel_sheets(frame, options[choice].casefold())
+                load.create_excel_sheets(frame, options[
+                    choice].casefold())
 
 
 def course_enrollment_percentage(data):
@@ -86,9 +88,11 @@ def course_enrollment_percentage(data):
 
     choice = menu.submenu_course_code(course_codes)
     if choice is not None:
-        frame = transform.get_course_frame(data, choice, False).copy()
+        frame = transform.get_course_frame(data, choice,
+                                           False).copy()
 
-        enrollment_percentage = util.calculate_enrollment_percentage(frame["FTE Count"], frame["Capacity"])
+        enrollment_percentage = util.calculate_enrollment_percentage(
+            frame["FTE Count"], frame["Capacity"])
         frame["Calculated Percentage"] = enrollment_percentage
 
         choice = choice.split("-")
@@ -97,15 +101,16 @@ def course_enrollment_percentage(data):
 
 
 def fte_per_division(data):
-    """Prompts user for division code and then creates an excel sheet with
-       FTE information for the courses within that division
+    """Prompts user for division code and then creates an excel sheet
+    with FTE information for the courses within that division
 
     Parameters
     ----------
     data: pd.DataFrame
         DataFrame to extract information from
     """
-    unique_divisions = transform.get_column_uniques(data, "Sec Divisions")
+    unique_divisions = transform.get_column_uniques(
+        data, "Sec Divisions")
     header = "FTE by Division"
     unique_divisions.append("No code")
     unique_divisions.append("Return to Main Menu")
@@ -113,27 +118,36 @@ def fte_per_division(data):
 
     # Get the division
     choice = menu.get_menu_choice(len(unique_divisions))
-    division_frame = transform.get_division_frame(data,
-                                                  unique_divisions[choice])
+    division_frame = transform.get_division_frame(
+        data, unique_divisions[choice])
 
     # Filter for the necessary columns
-    columns_needed = ["Sec Name", "X Sec Delivery Method", "Meeting Times",
-                      "Capacity", "FTE Count", "Total FTE", "Sec Faculty Info"]
+    columns_needed = [
+        "Sec Name",
+        "X Sec Delivery Method",
+        "Meeting Times",
+        "Capacity",
+        "FTE Count",
+        "Total FTE",
+        "Sec Faculty Info"
+    ]
     division_frame = division_frame[columns_needed]
     division_frame["Generated FTE"] = None
 
     # Get the courses in the division
-    courses = transform.get_column_uniques(division_frame, "Sec Name")
+    courses = transform.get_column_uniques(
+        division_frame, "Sec Name")
     course_codes = sorted(util.get_course_codes(courses))
 
-    load.create_fte_excel(data=division_frame, name=unique_divisions[choice],
+    load.create_fte_excel(data=division_frame,
+                          name=unique_divisions[choice],
                           course_codes=course_codes,
                           first_cell=unique_divisions[choice])
 
 
-def fte_per_faculty(faculty_data, course_tier ):
-    """Prompts user for faculty name and then creates an excel sheet with
-       FTE information for the courses for that faculty member
+def fte_per_faculty(faculty_data, course_tier):
+    """Prompts user for faculty name and then creates an excel sheet
+    with FTE information for the courses for that faculty member
 
     Parameters
     ----------
@@ -156,8 +170,8 @@ def fte_per_faculty(faculty_data, course_tier ):
                            "Info' in faculty_data.")
 
         # Get the unique instances of each faculty fame from teh DataFrame
-        unique_faculty = transform.get_column_uniques(faculty_data,
-                                                      "Sec Faculty Info")
+        unique_faculty = transform.get_column_uniques(
+            faculty_data, "Sec Faculty Info")
 
         # Get the faculty name to search from user
         faculty_member = menu.fte_faculty_submenu(unique_faculty)
@@ -169,7 +183,8 @@ def fte_per_faculty(faculty_data, course_tier ):
 
             # Ensure faculty_frame is not empty
             if faculty_frame.empty:
-                print(f"No data found for faculty member: {faculty_member}")
+                print(f"No data found for faculty member:"
+                      f" {faculty_member}")
                 input("Press Enter to continue...")
                 return
 
@@ -183,16 +198,18 @@ def fte_per_faculty(faculty_data, course_tier ):
                                 col in faculty_frame.columns]
             if not existing_columns:
                 raise KeyError(
-                    "None of the required columns exist in faculty_frame.")
+                    "None of the required columns exist "
+                    "in faculty_frame.")
             faculty_frame = faculty_frame[
-                existing_columns].copy()  # Use .copy() to avoid warnings
+                existing_columns].copy()
 
             if "Generated FTE" not in faculty_frame.columns:
                 faculty_frame = transform.generate_fte(faculty_frame,
                                                        course_tier)
 
             # Get the Courses for the faculty member
-            courses = transform.get_column_uniques(faculty_frame, "Sec Name")
+            courses = transform.get_column_uniques(
+                faculty_frame, "Sec Name")
             course_codes = sorted(util.get_course_codes(courses))
 
             # Get the last name and first initial for the filename
@@ -202,8 +219,6 @@ def fte_per_faculty(faculty_data, course_tier ):
             load.create_fte_excel(data=faculty_frame, name=file_name,
                                   course_codes=course_codes,
                                   first_cell=faculty_member)
-
-
         else:
             print("No faculty member selected")
             input("Press enter to continue")
@@ -214,15 +229,13 @@ def fte_per_faculty(faculty_data, course_tier ):
         print(f"ValueError in fte_per_faculty: {e}")
     except TypeError as e:
         print(f"TypeError in fte_per_faculty: {e}")
-    except Exception as e:
-        print(f"Unexpected error in fte_per_faculty: {e}")
 
     print("Returning to main menu...")
 
 
 def fte_per_course(data, course_tier_data):
-    """Prompts user for course name and then creates an excel sheet with FTE
-       information for all sections for that course
+    """Prompts user for course name and then creates an excel sheet with
+     FTE information for all sections for that course
 
     Parameters
     ----------
@@ -232,10 +245,12 @@ def fte_per_course(data, course_tier_data):
     courses = transform.get_column_uniques(data, "Sec Name")
     course_codes = util.get_course_codes(courses)
     choice = menu.submenu_course_code(course_codes)
-    course_data = transform.get_course_frame(data=data, name=choice, filter=False).copy()
-    enrollment_percentage = util.calculate_enrollment_percentage(course_data["FTE Count"], course_data["Capacity"])
+    course_data = transform.get_course_frame(data=data, name=choice,
+                                             apply_filter=False).copy()
+    enrollment_percentage = util.calculate_enrollment_percentage(
+        course_data["FTE Count"], course_data["Capacity"])
     course_data["Enrollment Per"] = enrollment_percentage
     course_data = transform.generate_fte(course_data, course_tier_data)
     if choice is not None:
         load.create_fte_excel(data=course_data, name=choice,
-                              course_codes=[choice], filter=False)
+                              course_codes=[choice], apply_filter=False)

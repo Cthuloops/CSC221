@@ -1,14 +1,8 @@
 """Utility functions."""
 
-import os
+
 import re
-import subprocess
-
-
-def clear_screen():
-    """OS sensitive clear command."""
-    clear = "clear" if os.name == "posix" else "cls"
-    subprocess.run(clear)
+import pandas as pd
 
 
 def get_course_codes(courses):
@@ -35,8 +29,8 @@ def get_course_codes(courses):
 
 
 def find_faculty(search_for, to_search):
-    """Searches faculty names for a match and returns None or the name in a
-       list
+    """Searches faculty names for a match and returns None or the name
+    in a list
 
     Parameters
     ----------
@@ -60,7 +54,8 @@ def find_faculty(search_for, to_search):
             search_last = search_for.split()[1]  # Extract last name
             name = [n for n in to_search if n.split()[1] == search_last]
         except IndexError:
-            # If user only provided one name, check against last names in the list
+            # If user only provided one name, check against last names
+            # in the list
             name = [n for n in to_search if search_for == n.split()[1]]
 
     # If still no match, compare first initials
@@ -72,8 +67,9 @@ def find_faculty(search_for, to_search):
 
 
 def calculate_enrollment_percentage(count, capacity):
-    """Calculates enrollment percentage based on course count and capacity
-    
+    """Calculates enrollment percentage based on course count and
+    capacity
+
     Paramters
     ---------
     count: int
@@ -81,4 +77,9 @@ def calculate_enrollment_percentage(count, capacity):
     capacity: int
         Max number of students that can be enrolled
     """
+    if isinstance(capacity, pd.Series):
+        # Replace any 0 values in the Series with NaN to prevent
+        # division errors
+        capacity = capacity.replace(0, pd.NA)
+
     return ((count / capacity) * 100).round(1).astype(str) + "%"
