@@ -1,0 +1,29 @@
+General Pseudocode
+
+
+Extract support files "deanDailyCsar.csv", "FTE_Tier.xlsx" create a DataFrame for each
+Sort the DataFrame for "deanDailyCsar.csv" by "Sec Divisions", "Sec Name", "Sec Faculty Info"
+Display menu to user: 
+1. Enter "Sec Divisions" code
+2. Get Course Enrollment Percentage
+3. FTE by Division
+4. FTE per Instructor
+5. FTE per course
+6. Exit
+While keep going is True get menu option from user.
+If user option is 1, call options1 sending it the DataFrame for deanDailyCsar.
+	This option will allow user to select one, muliple, or all divisions and 
+	write that data to it's own Excel File. It will then return to the main menu.
+If user option is 2, call course_enrollemnt_percentage, sending it the DataFrame for deanDailyCsar
+	This option will allow user to enter a course code and calculate enrollment percentage for course.
+	It will then write the data to a new Excel File and return to the main menu
+If user option is 3, call fte_per_division sending it the DataFrame for deanDailyCsar.
+	This option will allow user to enter a division code. It will then write the data to an Excel file.
+	Then it will return to the main menu.
+If user option is 4, call fte_per_faculty, sending it the DataFrames from "deanDailyCsar.csv", "FTE_Tier.xlsx"
+	This option will allow user to enter a faculty name. It will then get data for all courses for that
+	faculty member. It will calculate the generated FTE and write it to an Excel File.
+If user option is 5, call fte_per_course, sending it the DataFrames from "deanDailyCsar.csv", "FTE_Tier.xlsx"
+	This option will allow user to enter a coure name. It will then get data for all sections for that
+	course. It will calculate the generated FTE for each and write it to an Excel File.
+If user option is 6, the program will end. 
