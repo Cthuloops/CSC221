@@ -21,6 +21,7 @@ def sort_dataframe(data, sort_by=["Sec Divisions", "Sec Name",
     pd.DataFrame
         Sorted DataFrame
     """
+    assert isinstance(data, pd.DataFrame)
     return data.sort_values(by=sort_by)
 
 
@@ -39,6 +40,8 @@ def get_column_uniques(data, name):
     list[str]
         List of unique values.
     """
+    assert isinstance(data, pd.DataFrame)
+    assert name is not None
 
     # Extract unique, non-null values
     unique_values = data[name].dropna().unique()
@@ -56,6 +59,9 @@ def get_division_frame(data, name):
     name: str
         The division code to target.
     """
+    assert isinstance(data, pd.DataFrame)
+    assert name is not None
+
     # Get empty cells
     if name is None or name == "No code":
         frame = data[data["Sec Divisions"].isna() |
@@ -84,6 +90,9 @@ def get_course_frame(data, name, apply_filter=True):
         All rows associated to the Course Code without face-to-face
         classes with INET meeting times if filtered, else all rows.
     """
+    assert isinstance(data, pd.DataFrame)
+    assert name is not None
+
     # Get the course rows
     frame = data[data["Sec Name"].str.contains(name)]
     if apply_filter:
@@ -119,22 +128,13 @@ def get_faculty_frame(data, name):
         All rows associated to the given faculty member of no faculty
         member.
     """
+    assert isinstance(data, pd.DataFrame)
+    assert name is not None
+
     # Get faculty rows
     frame = data[data["Sec Faculty Info"] == name]
 
     return frame
-
-
-def get_tier_frame():
-    """
-    extracts the data from FTE_Tier.xlsx into a DataFrame
-    :return: pd.DataFrame
-        tier_frame: DataFrame containing the Tier and proposed
-        funding level for each course ID
-    """
-
-    tier_frame = extract.extract_csv('FTE_Tier.xlsx')
-    return tier_frame
 
 
 def generate_fte(data, tier, support=1926):
@@ -156,6 +156,9 @@ def generate_fte(data, tier, support=1926):
     pd.DataFrame
         generate_fte: a new DataFrame that has the generated FTE
     """
+    assert isinstance(data, pd.DataFrame)
+    assert isinstance(tier, pd.DataFrame)
+
     # Constant value used for calculating FTE
     try:
         # Ensure valid dataframes
@@ -270,6 +273,7 @@ def total_ftes(data):
     final_fte: Interger
         total generated FTE for entire dataframe
     """
+    assert isinstance(data, pd.DataFrame)
 
     try:
         # Ensure required columns exist

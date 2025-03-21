@@ -1,6 +1,4 @@
-""" This program creates spreadsheets of information on classes
-offered by
-FTCC
+""" This program creates spreadsheets of information on classes offered by FTCC
 03/21/2025
 CSC221 M4Group_Pro_FTE
 Harley Coughlin & Karen Brown

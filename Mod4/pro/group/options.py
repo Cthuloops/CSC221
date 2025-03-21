@@ -27,6 +27,8 @@ def option1(data):
     data: pd.DataFrame
         DataFrame to create excel sheets from.
     """
+    assert isinstance(data, pd.DataFrame)
+
     print_option1_instructions()
     unique_codes = transform.get_column_uniques(data,
                                                 "Sec Divisions")
@@ -80,6 +82,8 @@ def course_enrollment_percentage(data):
     data: pd.DataFrame
         DataFrame to extract course information from.
     """
+    assert isinstance(data, pd.DataFrame)
+
     # This get ALL of the variations of each course, all the sections we
     # don't need.
     courses = transform.get_column_uniques(data, "Sec Name")
@@ -109,6 +113,8 @@ def fte_per_division(data):
     data: pd.DataFrame
         DataFrame to extract information from
     """
+    assert isinstance(data, pd.DataFrame)
+
     unique_divisions = transform.get_column_uniques(
         data, "Sec Divisions")
     header = "FTE by Division"
@@ -156,6 +162,8 @@ def fte_per_faculty(faculty_data, course_tier):
     course_tier: pd.DataFrame
         DataFrame to extract information from
     """
+    assert isinstance(faculty_data, pd.DataFrame)
+    assert isinstance(course_tier, pd.DataFrame)
 
     try:
 
@@ -242,6 +250,9 @@ def fte_per_course(data, course_tier_data):
     data: pd.DataFrame
         DataFrame to extract information from.
     """
+    assert isinstance(data, pd.DataFrame)
+    assert isinstance(course_tier_data, pd.DataFrame)
+
     courses = transform.get_column_uniques(data, "Sec Name")
     course_codes = util.get_course_codes(courses)
     choice = menu.submenu_course_code(course_codes)

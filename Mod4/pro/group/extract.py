@@ -35,6 +35,7 @@ def extract_csv(filename):
         raise pd.errors.EmptyDataError(f"Error: File {file_path} is "
                                        f"empty") from exc
 
+    assert isinstance(data, pd.DataFrame)
     return data
 
 
@@ -52,7 +53,6 @@ def extract_excel(filename):
         DataFrame containing the Excel information
     """
     assert filename is not None, "Filename should not be None."
-    assert filename is not None, "Filename should not be None."
     assert isinstance(filename, str), \
         f"Expected filename to be a string instead got {filename}."
     assert filename, "File should not be empty"
@@ -69,13 +69,14 @@ def extract_excel(filename):
         raise pd.errors.EmptyDataError(f"Error: File {file_path} is "
                                        f"empty") from exc
 
+    assert isinstance(data, pd.DataFrame)
     return data
 
 
 def extract_data(filenames):
 
-    """
-    Extracts data from files and returns a dictionary of DataFrames.
+    """Extracts data from files and returns a dictionary of DataFrames.
+
     Parameters
     ----------
     filename: str
@@ -87,7 +88,10 @@ def extract_data(filenames):
         dictionary of DataFrames
 
     bool
-        true if error occurs """
+        true if error occurs
+    """
+    assert filenames is not None
+    assert isinstance(filenames, list)
 
     dfs = {}
     error = False
@@ -119,4 +123,6 @@ def extract_data(filenames):
             print("Data failed to load.")
             error = True
 
+    for k in dfs.keys():
+        assert isinstance(dfs[k], pd.DataFrame)
     return dfs, error
