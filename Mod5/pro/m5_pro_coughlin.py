@@ -35,7 +35,7 @@ def print_menu():
         "4) Calculate Total Charge by Owner",
         "5) Retrieve pet information by PetBreed",
         "6) Exit")
-    print(f"{'Main Menu':-^{{max(len(opt) for opt in options)}}}")
+    print(f"{'Main Menu':-^{max(len(opt) for opt in options)}}")
     for opt in options:
         print(opt)
 
@@ -44,8 +44,10 @@ def get_menu_choice():
     """Gets a menu option"""
     try:
         choice = int(input("Enter menu option: "))
+        if choice < 1 or choice > 6:
+            raise ValueError
     except ValueError:
-        print("Please enter a valid number.")
+        print("Please enter a valid number between 1 and 6.\n")
     else:
         return choice
 
