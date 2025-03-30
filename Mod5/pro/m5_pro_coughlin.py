@@ -72,10 +72,15 @@ def main():
                           f"{op_df["Charge"].sum()}\n")
 
         elif choice == 5:
+            # This is following the original option 5 instructions.
             pets = get_table_dataframe("PETS")
-            print(pets)
+            print(pets["PetBreed"].to_string(index=False))
             breed = get_breed(pets)
-            print(breed)
+            records = pets[pets["PetBreed"] == breed]
+            total_charges = records["Charge"].sum()
+            print()
+            print(f"Total: ${total_charges}")
+            print(f"Average: ${total_charges / len(records)}")
 
         elif choice == 6:
             print("Thanks for using the program.")
@@ -156,7 +161,7 @@ def get_breed(data):
     invalid = True
     while invalid:
         try:
-            breed = input("Enter breed type: ")
+            breed = input("Enter breed type: ").title()
             breed_list = data["PetBreed"].to_list()
             if breed not in breed_list:
                 print(f"{breed} not found")
