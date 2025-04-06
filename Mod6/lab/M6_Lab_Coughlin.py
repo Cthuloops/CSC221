@@ -43,6 +43,31 @@ def main():
             survivors = transform.get_survivors(df)
             display.survivor_amounts(survivors)
 
+        elif choice == 4:
+            header = "Option 4 submenu"
+            options = ("Females Survived", "Males Survived", "Both")
+            menu.print_submenu(header, options)
+            submenu_choice = menu.get_string(options)
+            survivors = transform.get_survivors(df, submenu_choice)
+            display.survivor_amounts(survivors, submenu_choice)
+
+        elif choice == 5:
+            survivors = transform.get_survivors_by_class(df)
+            display.survivor_amounts(survivors, "class")
+
+        elif choice == 6:
+            survivors = transform.get_survivors_by_travel(df)
+            display.survivor_amounts_by_travel(survivors)
+
+        elif choice == 7:
+            header = "Option 7 submenu"
+            options = ("All", "Infant", "Child", "Teenager", "Young adult",
+                       "Adult", "Unknown")
+            menu.print_submenu(header, options)
+            submenu_choice = menu.get_string(options)
+            survivors = transform.get_survivors_by_age(df)
+            display.survivor_amounts_by_age(survivors, submenu_choice)
+
         elif choice == 8:
             print("Nice")
 

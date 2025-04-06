@@ -2,6 +2,7 @@
 
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def first_fifteen(data, amount=15):
@@ -45,16 +46,66 @@ def survivor_amounts(people, who="all"):
     if who == "all":
         print(f"Dead: {people.dead.sum():>7}")
         print(f"Survived: {people.survived.sum()}")
+
+        plot_data = pd.DataFrame({
+            "Dead": [people.dead.sum()],
+            "Survived": [people.survived.sum()]
+        })
+        ax = plot_data.plot(
+            kind="bar",
+            stacked=True,
+            color=["darkred", "darkgreen"],
+            title="Titanic Passengers: Survival Counts"
+        )
+        ax.set_ylabel("Number of Passengers")
+        ax.set_xticklabels([])
+
+        for container in ax.containers:
+            ax.bar_label(container, label_type="center", color="white",
+                         fontweight="bold")
+
     elif who == "both":
-        print(people)
-    elif who == "females survived":
-        print(people)
-    elif who == "males survived":
-        print(people)
+        ax = people.plot(
+            kind="bar",
+            stacked=True,
+            color=["darkred", "darkgreen"],
+            title="Survival by Gender"
+        )
+        ax.set_ylabel("Number of Passengers")
+        ax.set_xlabel("Gender")
+
+        for container in ax.containers:
+            ax.bar_label(container, label_type="center", color="white",
+                         fontweight="bold")
+
+    elif who in ["females survived", "males survived"]:
+        people.plot(
+            kind="pie",
+            autopct="%1.1f%%",
+            colors=["darkred", "darkgreen"],
+            title=f"Survival Rate: {who.split()[0].title()}"
+        )
+
     elif who == "class":
+        ax = people.plot(
+            kind="bar",
+            stacked=True,
+            color=["darkred", "darkgreen"],
+            title="Survival by Passenger Class"
+        )
+        ax.set_ylabel("Number of Passengers")
+        ax.set_xlabel("Passenger class")
+
+        for container in ax.containers:
+            ax.bar_label(container, label_type="center", color="white",
+                         fontweight="bold")
+
+    if who != "all":
         print(people)
     print()
-    people.plot()
+    plt.legend(loc="upper left")
+    plt.tight_layout()
+    plt.show()
 
 
 def survivor_amounts_by_travel(people):
@@ -77,8 +128,8 @@ def survivor_amounts_by_travel(people):
 
     print("Percentage of survivors by group:")
     passenger_totals = people.sum(axis=1)
-    passenger_percentages = (people["survived"] / passenger_totals  * 100).round(2)
-    print(passenger_percentages.to_string(dtype=False))
+    passenger_percentages = (people["survived"] / passenger_totals * 100)
+    print(passenger_percentages.round(2).to_string(dtype=False))
     print()
 
 

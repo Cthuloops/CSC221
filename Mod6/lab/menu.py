@@ -56,7 +56,7 @@ def print_submenu(header, options):
     max_length = max((len(option) for option in options))
     print(f"{header:~^{max_length + gutter}}")
     for i in range(len(options)):
-        print(f"{i}: options[i]")
+        print(f"{i + 1}: {options[i]}")
 
 
 def get_string(options):
