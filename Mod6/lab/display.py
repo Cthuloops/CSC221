@@ -1,6 +1,9 @@
 """Display the information."""
 
 
+import pandas as pd
+
+
 def first_fifteen(data, amount=15):
     """Prints an amount of rows from the top of a DataFrame.
 
@@ -51,6 +54,7 @@ def survivor_amounts(people, who="all"):
     elif who == "class":
         print(people)
     print()
+    people.plot()
 
 
 def survivor_amounts_by_travel(people):

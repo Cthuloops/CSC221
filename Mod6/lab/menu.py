@@ -14,7 +14,7 @@ def print_menu():
     print("8. Exit")
 
 
-def get_int_range(min, max):
+def get_int_range(min_num, max_num):
     """Prompt the user for an int between min and max, inclusive.
 
     Parameters
@@ -29,12 +29,12 @@ def get_int_range(min, max):
     int
         An int between min and max, inclusive.
     """
-    assert isinstance(min, int), "min must be an integer."
-    assert isinstance(max, int), "max must be an intger."
-    choice = min - 1
-    while choice < min or choice > max:
+    assert isinstance(min_num, int), "min must be an integer."
+    assert isinstance(max_num, int), "max must be an intger."
+    choice = min_num - 1
+    while choice < min_num or choice > max_num:
         try:
-            choice = int(input(f"Enter a number between {min} and {max}: "))
+            choice = int(input(f"Enter a number between {min_num} and {max_num}: "))
         except ValueError:
             print("Invalid: please enter a valid integer.")
         else:
@@ -53,7 +53,7 @@ def print_submenu(header, options):
     """
     print()
     gutter = len(options) + len(": ")
-    max_length = max([len(option) for option in options])
+    max_length = max((len(option) for option in options))
     print(f"{header:~^{max_length + gutter}}")
     for i in range(len(options)):
         print(f"{i}: options[i]")

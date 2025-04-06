@@ -40,7 +40,8 @@ def main():
             display.records_amount(df)
 
         elif choice == 3:
-            ...
+            survivors = transform.get_survivors(df)
+            display.survivor_amounts(survivors)
 
         elif choice == 8:
             print("Nice")
