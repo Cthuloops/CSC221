@@ -52,6 +52,8 @@ def print_submenu(header, options):
         Tuple of strings that contain the submenu options.
     """
     print()
+    print("Please type the full text of the option you want to select.")
+    print("Integer selection is not supported.")
     gutter = len(options) + len(": ")
     max_length = max((len(option) for option in options))
     print(f"{header:~^{max_length + gutter}}")

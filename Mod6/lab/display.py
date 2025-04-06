@@ -132,6 +132,45 @@ def survivor_amounts_by_travel(people):
     print(passenger_percentages.round(2).to_string(dtype=False))
     print()
 
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+
+    # Bar for overall numbers.
+    people.plot(
+        kind="bar",
+        stacked=True,
+        color=["darkred", "darkgreen"],
+        title="Survival by Group",
+        ax=ax1
+    )
+    ax1.set_ylabel("Number of Passengers")
+    ax1.set_xlabel("Passenger Group")
+
+    for container in ax1.containers:
+        ax1.bar_label(container, label_type="center", color="white",
+                      fontweight="bold")
+
+    # Pie charts for the groups
+    dead_by_group = people["dead"]
+    dead_by_group.plot(
+        kind="pie",
+        autopct="%1.1f%%",
+        title="Distribution of Deaths by Group",
+        ax=ax2
+    )
+    ax2.set_ylabel("")
+
+    survived_by_group = people["survived"]
+    survived_by_group.plot(
+        kind="pie",
+        autopct="%1.1f%%",
+        title="Distribution of Survivors by Group",
+        ax=ax3
+    )
+    ax3.set_ylabel("")
+
+    plt.tight_layout()
+    plt.show()
+
 
 def survivor_amounts_by_age(people, age_group):
     """Prints information about the age groups of passengers
@@ -144,7 +183,45 @@ def survivor_amounts_by_age(people, age_group):
     print()
     if age_group == "all":
         print(people)
+
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+
+        people["dead"].plot(
+            kind="pie",
+            autopct="%1.1f%%",
+            title="Death Distribution by Age",
+            ax=ax1
+        )
+        people["survived"].plot(
+            kind="pie",
+            autopct="%1.1f%%",
+            title="Survival Distribution by Age",
+            ax=ax2
+        )
+
     else:
         print(f"{age_group.title()}:")
         print(people.loc[age_group].to_string(dtype=False))
+
+        age_data = pd.DataFrame({
+            'dead': [people.loc[age_group, 'dead']],
+            'survived': [people.loc[age_group, 'survived']]
+        })
+
+        ax = age_data.plot(
+            kind="bar",
+            stacked=True,
+            color=["darkred", "darkgreen"],
+            title=f"{age_group.title()} Age Group"
+        )
+        ax.set_ylabel("Number of Passengers")
+        ax.set_xticklabels([])
+
+        for container in ax.containers:
+            ax.bar_label(container, label_type="center", color="white",
+                         fontweight="bold")
+
     print()
+
+    plt.tight_layout()
+    plt.show()
